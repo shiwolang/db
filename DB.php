@@ -20,7 +20,7 @@ class DB
 
 
     /**
-     * @param $config
+     * @param array|PDO $config
      * @throws DBException
      */
     private function __construct($config)
@@ -68,6 +68,20 @@ class DB
 
 
     /**
+     * 数据库初始化
+     *
+     * DB::init([
+     *     'database_type' => 'mysql',
+     *     'database_name' => 'dbutil',
+     *     'server'        => 'localhost',
+     *     'username'      => 'root',
+     *     'password'      => 'root',
+     *     'charset'       => 'utf8',
+     *     'port'          => '3306',
+     *     'option'        => [],
+     *     'commands'      => []
+     * ]);
+     *
      * @param array|PDO $config
      * @param string $name
      * @param bool|false $reinit
@@ -86,6 +100,7 @@ class DB
     }
 
     /**
+     * 获取DB实例
      * @param string $name
      * @return self
      * @throws DBException
@@ -100,6 +115,7 @@ class DB
     }
 
     /**
+     * 获取PDO实例
      * @param string $name
      * @return PDO
      * @throws DBException
@@ -117,6 +133,7 @@ class DB
     }
 
     /**
+     * 获取当前POD实例
      * @return null|PDO
      */
     public function getPdo()
@@ -125,6 +142,8 @@ class DB
     }
 
     /**
+     * 预处理字符串
+     *
      * @param $statement
      * @param array $params
      * @param null $result
@@ -145,6 +164,8 @@ class DB
     }
 
     /**
+     * 查询预处理字符串
+     *
      * @param $statement
      * @param array $params
      * @param null $result
@@ -156,6 +177,8 @@ class DB
     }
 
     /**
+     * 单表插入
+     *
      * @param $tableName
      * @param $params
      * @param null $lastInsertIdName
@@ -179,6 +202,8 @@ class DB
     }
 
     /**
+     * 单表更新
+     *
      * @param $tableName
      * @param $params
      * @param $where
@@ -205,6 +230,8 @@ class DB
     }
 
     /**
+     * 单表删除
+     *
      * @param $tableName
      * @param $where
      * @param $whereParams
@@ -220,6 +247,9 @@ class DB
         return $this->prepare($sql, $whereParams)->rowCount();
     }
 
+    /**
+     * 可嵌套事务处理，开始事务
+     */
     public function beginTransaction()
     {
         ++$this->transactions;
