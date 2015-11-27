@@ -133,6 +133,10 @@ class Statement
         }
     }
 
+    /**
+     * @param null $fetchResult
+     * @return string
+     */
     public function json(&$fetchResult = null)
     {
         $isContainer = false;
