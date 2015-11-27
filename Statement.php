@@ -1,0 +1,167 @@
+<?php
+/**
+ * Created by zhouzhongyuan.
+ * User: zhou
+ * Date: 2015/11/27
+ * Time: 11:43
+ */
+
+namespace shiwolang\db;
+
+
+class Statement
+{
+    /** @var null|\PDOStatement */
+    private $statement = null;
+
+    /** @var null|DB */
+    private $db = null;
+
+    private $fetchMode = [];
+
+    private $jsonObjectContainerClassName = null;
+
+    public function __construct($statement, $db)
+    {
+        $this->db        = $db;
+        $this->statement = $statement;
+        $this->setFetchMode(\PDO::FETCH_ASSOC);
+    }
+
+    public function rowCount()
+    {
+        return $this->statement->rowCount();
+    }
+
+    public function bindParam()
+    {
+        $params = func_get_args();
+        call_user_func_array([$this->statement, "bindParam"], $params);
+
+        return $this;
+    }
+
+    public function getPdoType($data)
+    {
+        static $typeMap = [
+            'boolean'  => \PDO::PARAM_BOOL,
+            'integer'  => \PDO::PARAM_INT,
+            'string'   => \PDO::PARAM_STR,
+            'resource' => \PDO::PARAM_LOB,
+            'NULL'     => \PDO::PARAM_NULL,
+        ];
+        $type = gettype($data);
+
+        return isset($typeMap[$type]) ? $typeMap[$type] : \PDO::PARAM_STR;
+    }
+
+    public function bindValue($parameter, $value, $dataType = null)
+    {
+        if ($dataType === null) {
+            $dataType = $this->getPdoType($value);
+        }
+
+        $this->statement->bindValue($parameter, $value, $dataType);
+
+        return $this;
+    }
+
+    public function execute($params = [], &$result)
+    {
+        $isQMark = isset($params[0]);
+        foreach ($params as $name => $param) {
+            if ($isQMark) {
+                $name = $name + 1;
+            }
+            $this->bindValue($name, $param);
+        }
+        $result = $this->statement->execute();
+
+        return $this;
+    }
+
+    public function setFetchMode($mode)
+    {
+        $params = func_get_args();
+
+        $this->fetchMode = $params;
+        call_user_func_array([$this->statement, "setFetchMode"], $params);
+
+        return $this;
+    }
+
+
+    public function bindToClass($className, $constructArgs = [])
+    {
+        $this->setFetchMode(\PDO::FETCH_CLASS, $className, $constructArgs);
+
+        return $this;
+    }
+
+    public function bindToFunction($fn)
+    {
+        $this->setFetchMode(\PDO::FETCH_FUNC, $fn);
+
+        return $this;
+    }
+
+
+    public function all($param = null, $args = [])
+    {
+        $this->easyBind($param, $args);
+
+        return $this->statement->fetchAll();
+    }
+
+    public function easyBind($param = null, $args = [])
+    {
+        if ($param !== null) {
+            if (is_string($param)) {
+                $this->bindToClass($param, $args);
+            } elseif (is_callable($param)) {
+                $this->bindToFunction($param);
+            }
+        }
+    }
+
+    public function each($fn, $param = null, $args = [])
+    {
+        $this->easyBind($param, $args);
+
+        while ($row = $this->statement->fetch()) {
+            $fn($row);
+        }
+    }
+
+    public function json(&$fetchResult = null)
+    {
+        $isContainer = false;
+        if ($this->fetchMode[0] === \PDO::FETCH_CLASS) {
+            $className       = $this->fetchMode[1];
+            $constructArgs   = isset($this->fetchMode[2]) ? $this->fetchMode[2] : [];
+            $reflectionClass = new \ReflectionClass($className);
+            if (!in_array("JsonSerializable", $reflectionClass->getInterfaceNames())) {
+                $jsonObjectContainerClassName = $this->jsonObjectContainerClassName === null ?
+                    JsonObjectContainer::class :
+                    $this->jsonObjectContainerClassName;
+                $this->bindToClass($jsonObjectContainerClassName, [$className, $constructArgs]);
+                $isContainer = in_array("ObjectContainer", (new \ReflectionClass($jsonObjectContainerClassName))->getInterfaceNames());
+            }
+        }
+        $_fetchResult = $this->all();
+        $fetchResult  = $isContainer ? new Container($_fetchResult) : $_fetchResult;
+
+        return json_encode($_fetchResult);
+    }
+
+    /**
+     * @param null|string $jsonObjectContainerClassName
+     * @return $this
+     */
+    public function setJsonObjectContainerClassName($jsonObjectContainerClassName)
+    {
+        $this->jsonObjectContainerClassName = $jsonObjectContainerClassName;
+
+        return $this;
+    }
+}
