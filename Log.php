@@ -14,12 +14,12 @@ class Log
     /**
      * @var string
      */
-    private $sql    = "";
-    private $params = [];
+    protected $sql    = "";
+    protected $params = [];
     /**
      * @var null|DB
      */
-    private $db = null;
+    protected $db = null;
 
     public function __construct($db, $sql = "", $params = [])
     {
@@ -65,7 +65,10 @@ class Log
     function __debugInfo()
     {
         return [
-            "sql"    => [$this->getSql(), $this->params],
+            "sql"    => [
+                "statement" => $this->getSql(),
+                "params"    => $this->params
+            ],
             "rawSql" => $this->getRawSql()
         ];
     }

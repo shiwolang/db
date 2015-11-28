@@ -12,14 +12,14 @@ namespace shiwolang\db;
 class Statement
 {
     /** @var null|\PDOStatement */
-    private $statement = null;
+    protected $statement = null;
 
     /** @var null|DB */
-    private $db = null;
+    protected $db = null;
 
-    private $fetchMode = [];
+    protected $fetchMode = [];
 
-    private $jsonObjectContainerClassName = null;
+    protected $jsonObjectContainerClassName = null;
 
     public function __construct($statement, $db)
     {

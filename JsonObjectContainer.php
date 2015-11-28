@@ -11,10 +11,10 @@ namespace shiwolang\db;
 
 class JsonObjectContainer implements \JsonSerializable, ObjectContainerInterface
 {
-    private $className       = null;
-    private $object          = null;
-    private $reflectionClass = null;
-    private $data            = [];
+    protected $className       = null;
+    protected $object          = null;
+    protected $reflectionClass = null;
+    protected $data            = [];
 
     public function __construct($className = null, $constructArgs = [])
     {

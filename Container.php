@@ -12,7 +12,7 @@ namespace shiwolang\db;
 class Container implements \Iterator, \ArrayAccess, \Countable, \JsonSerializable
 {
     /** @var array|ObjectContainerInterface[] */
-    private $data = [];
+    protected $data = [];
 
     /**
      * @param ObjectContainerInterface[] $objectContainers
