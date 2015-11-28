@@ -11,6 +11,11 @@ namespace shiwolang\db\mysql;
 
 use shiwolang\db\StatementBuilderInterface;
 
+/**
+ * Class StatementBuilder
+ * @package shiwolang\db\mysql
+ * 数据库查询语句的链式封装
+ */
 class StatementBuilder implements StatementBuilderInterface
 {
 
