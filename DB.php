@@ -12,10 +12,23 @@ use PDO;
  */
 class DB
 {
+    /**
+     * @var DB[]
+     */
     private static $_instance = [];
 
-    private $log          = [];
-    private $pdo          = null;
+    /**
+     * @var Log[]
+     */
+    private $log = [];
+
+    /**
+     * @var null|PDO
+     */
+    private $pdo = null;
+    /**
+     * @var int
+     */
     private $transactions = 0;
 
 
@@ -105,7 +118,7 @@ class DB
      * @return self
      * @throws DBException
      */
-    public static function db($name = "default")
+    public static function connection($name = "default")
     {
         if (isset(self::$_instance[$name])) {
             return self::$_instance[$name];
@@ -259,6 +272,9 @@ class DB
         }
     }
 
+    /**
+     * 可嵌套事务处理，回滚事务
+     */
     public function rollBack()
     {
         if ($this->transactions == 1) {
@@ -269,6 +285,9 @@ class DB
         }
     }
 
+    /**
+     * 可嵌套事务处理，提交事务
+     */
     public function commit()
     {
         if ($this->transactions == 1) {
@@ -277,6 +296,11 @@ class DB
         --$this->transactions;
     }
 
+    /**
+     * 可嵌套事务处理，回调方式
+     * @param callable $fn
+     * @throws \Exception
+     */
     public function transaction(callable $fn)
     {
         $this->beginTransaction();
@@ -290,29 +314,45 @@ class DB
     }
 
     /**
+     * 获取sql执行记录
      * @param null|int $index
-     * @return array
+     * @return Log[]|Log
      */
     public function getLog($index = null)
     {
-        return $index == null ? $this->log : $this->log[$index];
+        return $index === null ? $this->log : $this->log[$index];
     }
 
     /**
-     * @param array $log
+     * @param Log[] $log
      */
     public function setLog($log)
     {
         $this->log = $log;
     }
 
-    public function appendLog($log)
+    /**
+     * @param Log $log
+     */
+    public function appendLog(Log $log)
     {
         $this->log[] = $log;
     }
 
+    /**
+     * 获取最后sql执行记录
+     * @return Log
+     */
     public function getLastLog()
     {
         return end($this->log);
+    }
+
+    /**
+     * 清除所有LOG
+     */
+    public function clearLog()
+    {
+        $this->log = [];
     }
 }

@@ -68,6 +68,7 @@ class Statement
 
     public function execute($params = [], &$result)
     {
+
         $isQMark = isset($params[0]);
         foreach ($params as $name => $param) {
             if ($isQMark) {
@@ -76,6 +77,8 @@ class Statement
             $this->bindValue($name, $param);
         }
         $result = $this->statement->execute();
+
+        $this->db->appendLog(new Log($this->db, $this->statement->queryString, $params));
 
         return $this;
     }
