@@ -101,35 +101,24 @@ class Statement
         return $this;
     }
 
-    public function bindToFunction($fn)
-    {
-        $this->setFetchMode(\PDO::FETCH_FUNC, $fn);
-
-        return $this;
-    }
-
 
     public function all($param = null, $args = [])
     {
-        $this->easyBind($param, $args);
+        if (is_callable($param)) {
+            return $this->statement->fetchAll(\PDO::FETCH_FUNC, $param);
+        }
+        if ($param !== null && is_string($param)) {
+            $this->bindToClass($param, $args);
+        }
 
         return $this->statement->fetchAll();
     }
 
-    public function easyBind($param = null, $args = [])
-    {
-        if ($param !== null) {
-            if (is_string($param)) {
-                $this->bindToClass($param, $args);
-            } elseif (is_callable($param)) {
-                $this->bindToFunction($param);
-            }
-        }
-    }
 
-    public function each($fn, $param = null, $args = [])
+    public function each($fn, $className = null, $args = [])
     {
-        $this->easyBind($param, $args);
+
+        $className !== null && $this->bindToClass($className, $args);
 
         while ($row = $this->statement->fetch()) {
             $fn($row);
