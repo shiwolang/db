@@ -165,6 +165,7 @@ try {
 $db = DB::connection();
 $db->beginTransaction();
 try {
+
     try {
         $lastInsertId = $db->insert("content", [
             "title"       => "title1",
@@ -177,11 +178,13 @@ try {
         $db->rollBack();
         throw $e;
     }
+    
     $lastInsertId = $db->insert("content", [
         "title"       => "title2",
         "content"     => "content2",
         "time"        =>  time()
     ]);
+    
     $db->beginTransaction();
     try {
         $lastInsertId = $db->insert("content", [
@@ -194,7 +197,8 @@ try {
         $db->rollBack();
         throw $e;
     }
-    $this->commit();
+    
+    $db->commit();
 } catch (\Exception $e) {
     $db->rollBack();
     throw $e;
@@ -211,11 +215,13 @@ DB::connection()->transaction(function () {
                 ]);
             }
         });
+        
         DB::connection()->insert("content", [
             "title"       => "title2",
             "content"     => "content2",
             "time"        =>  time()
         ]);
+        
         DB::connection()->transaction(function () {
                 DB::connection()->insert("content", [
                     "title"       => "title3",
