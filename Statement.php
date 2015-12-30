@@ -133,7 +133,7 @@ class Statement
      */
     public function json(&$fetchResult = null, $className = null, $args = [])
     {
-        $className !== null && $this->easyBind($className, $args);
+        $className !== null && $this->bindToClass($className, $args);
         $isContainer = false;
         if ($this->fetchMode[0] === \PDO::FETCH_CLASS) {
             $className       = $this->fetchMode[1];

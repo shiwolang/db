@@ -159,10 +159,12 @@ class DB
      *
      * @param $statement
      * @param array $params
+     * @param bool $getRawSql
      * @param null $result
-     * @return Statement
+     * @return Statement|String
+     * @internal param bool $execute
      */
-    public function prepare($statement, $params = [], &$result = null)
+    public function prepare($statement, $params = [], $getRawSql = false, &$result = null)
     {
         if ($statement instanceof StatementBuilderInterface) {
             $params    = $statement->getPrepareStatementParams();
@@ -171,9 +173,8 @@ class DB
         $_statement = $this->getPdo()->prepare($statement);
 
         $container = new Statement($_statement, $this);
-        $container->execute($params, $result);
 
-        return $container;
+        return !$getRawSql ? $container->execute($params, $result) : (new Log($this, $statement, $params))->getRawSql();
     }
 
     /**
@@ -181,12 +182,13 @@ class DB
      *
      * @param $statement
      * @param array $params
+     * @param bool $getRawSql
      * @param null $result
-     * @return Statement
+     * @return Statement|String
      */
-    public function query($statement, $params = [], &$result = null)
+    public function query($statement, $params = [], $getRawSql = false, &$result = null)
     {
-        return $this->prepare($statement, $params, $result);
+        return $this->prepare($statement, $params, $getRawSql, $result);
     }
 
     /**
